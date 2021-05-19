@@ -1,0 +1,89 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> deposit_in;
+RWTexture2D<float4> deposit_out;
+RWTexture2D<float4> tex_trace_in;
+RWTexture2D<float4> tex_trace_out;
+int pixelWidth;
+int pixelHeight;
+float trace_decay_value;
+
+
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+    uint2 p = id.xy;
+
+    // Average deposit values in a 3x3x3 neighborhood
+    // Apply distance-based weighting to prevent overestimation along diagonals
+    float4 v = float4(0.0, 0.0, 0.0, 0.0);
+    float4 t = float4(0.0, 0.0, 0.0, 0.0);
+    float w = 0.0;
+
+    tex_trace_out[p] = float4(0.0, 0.0, 0.0, 1.0);
+
+    for (int dx = -1; dx <= 1; dx++) {
+        for (int dy = -1; dy <= 1; dy++) {
+            float weight = (all(int2(dx,dy)) == 0)? 1.0 : 1.0 / sqrt(float(abs(dx) + abs(dy)));
+            int2 txcoord = int2(p) + int2(dx, dy);
+            txcoord.x = txcoord.x % pixelWidth;
+            txcoord.y = txcoord.y % pixelHeight;
+            v += weight * deposit_in[txcoord];
+           // t += weight * tex_trace_in[txcoord];
+            w += weight;
+            //t.x += weight * tex_trace_in[txcoord].x;
+            //t.y += weight * tex_trace_in[txcoord].y;
+            //t.z += weight * tex_trace_in[txcoord].z;
+           // t.w += weight * tex_trace_in[txcoord].w;
+        }
+    }
+    v /= w;
+    //t /= w;
+
+    // Decay the deposit by a constant factor
+    v *= 0.9;
+    deposit_out[p] = v;//deposit_in[p];
+
+    // Decay the trace a little
+    //tex_trace[p] *= 0.995;
+  //  t *= 0.999;
+    //tex_trace_out[p] = t;
+    tex_trace_out[p] = float4(0.0, 0.0, 0.0, 1.0);
+    if (trace_decay_value < 0.98) {
+     //   trace_decay_value = 0.8;
+    }
+    if (trace_decay_value >= 0.98 && trace_decay_value < 0.99) {
+       // trace_decay_value = 0.9;
+    }
+    if (trace_decay_value >= 0.99 && trace_decay_value < 1.0) {
+        //trace_decay_value = 1.0;
+    }
+
+    float x = tex_trace_in[p].x - trace_decay_value;
+    if (x < 0.0)
+        x = 0.0;
+    float y = tex_trace_in[p].y - trace_decay_value;
+    if (y < 0.0)
+        y = 0.0;
+    float z = tex_trace_in[p].z - trace_decay_value;
+    if (z < 0.0)
+        z = 0.0;
+
+    tex_trace_out[p] = float4(x, y, z, 1.0);
+
+    //tex_trace_out[p].x = tex_trace_in[p].x - 0.01;
+    //tex_trace_out[p].y = max(tex_trace_in[p].y - 0.01, 0.0);
+    //tex_trace_out[p].z = max(tex_trace_in[p].z - 0.01, 0.0);
+    
+    //* trace_decay_value;
+    //if (tex_trace_out[p].x < 0.2) {
+      //  tex_trace_out[p] = float4(0.0, 0.0, 0.0, 1.0);
+    //}
+    //tex_trace_out[p] = tex_trace_in[p];
+   // tex_trace_out[p] = float4(0.0, 1.0, 0.0, 1.0);
+}
