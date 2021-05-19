@@ -152,6 +152,8 @@ public class ComputeHookup : MonoBehaviour
     private Dictionary<string, List<UIClickData>> userClickData 
         = new Dictionary<string, List<UIClickData>>();
 
+    private EncouragementBot slimeBot = new EncouragementBot();
+
     //public Camera camera;
     // Start is called before the first frame update
     void Start() {
