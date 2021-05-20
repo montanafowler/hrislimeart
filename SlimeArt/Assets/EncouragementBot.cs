@@ -15,10 +15,10 @@ public class EncouragementBot : MonoBehaviour
         "SenseDistanceSlider", "TraceDecaySlider", "DrawMouseDown", "DrawMouseUp"};
     private TextMeshProUGUI robotWords; 
     private int lastMessageTimeStamp = 0;
+   
     void Start()
     {
-        Debug.Log("ehllo");
-        prepUnusedUISayings();
+        
         prepUnusedGenericSayings();
         robotWords = GameObject.Find("RobotWords").GetComponent<TextMeshProUGUI>();
         robotWords.SetText("\n" + getMessage());
@@ -27,31 +27,52 @@ public class EncouragementBot : MonoBehaviour
 
     public EncouragementBot()
     {
-        //prepUnusedUISayings();
-       
+
+
+        prepUnusedUISayings();
+        Dictionary<string, List<string>> unusedUISayings2 = new Dictionary<string, List<string>>();
+        unusedUISayings2.Add("test", new List<string>());
+        unusedUISayings2["test"].Add("test value string");
+        unusedUISayings2["test"].Add("test2 value string");
+
     } 
 
-     void Update()
+    public void Update()
     {
-        if ((int)Time.time == (lastMessageTimeStamp + Random.Range(5, 15)))
+        /*if ((int)Time.time == (lastMessageTimeStamp + Random.Range(5, 10)))
         {
             robotWords.SetText("\n" + getMessage());
             lastMessageTimeStamp = (int)Time.time;
-        }
+        }*/
     }
 
     public void uiClicked(string ui, float value0, float value1, float value2)
     {
-        if ((int)Time.time > (lastMessageTimeStamp + 5))
+
+        
+        if ((int)Time.time > (lastMessageTimeStamp + 3))
         {
-            
-            List<string> messages = unusedUISayings[ui];
-            if (messages.Count > 0)
+            Debug.Log("ui clicked: " + ui);
+            Dictionary<string, List<string>>.KeyCollection keyColl = unusedUISayings.Keys;
+            foreach (string s in keyColl)
             {
-                lastMessageTimeStamp = (int)Time.time;
-                int index = Random.Range(0, messages.Count);
-                robotWords.SetText("\n" + messages[index]);
+                 Debug.Log(s);
             }
+            if (unusedUISayings.ContainsKey(ui)) {
+                List<string> messages = unusedUISayings[ui];
+                if (messages.Count > 0)
+                {
+                    lastMessageTimeStamp = (int)Time.time;
+                    int index = Random.Range(0, messages.Count);
+                    robotWords = GameObject.Find("RobotWords").GetComponent<TextMeshProUGUI>();
+                    robotWords.SetText("\n" + messages[index]);
+                    unusedUISayings[ui].RemoveAt(index);
+                }
+            } else
+            {
+                Debug.Log("unusedUISayings does not contain key " + ui);
+            }
+            
         }
     }
 
@@ -80,9 +101,9 @@ public class EncouragementBot : MonoBehaviour
     unusedUISayings.Keys;
         foreach (string s in keyColl)
         {
-           Debug.Log(s);
+          // Debug.Log(s);
         }
-        /*
+
         unusedUISayings["Play"].Add("Let's see it!");
         unusedUISayings["Play"].Add("Let's go!");
         unusedUISayings["Play"].Add("Exciting!");
@@ -105,7 +126,7 @@ public class EncouragementBot : MonoBehaviour
         unusedUISayings["ScaleSlider"].Add("When particles have a wider field of view they can see more, so they spread out rather than create lines.");
         unusedUISayings["ScaleSlider"].Add("When particles have a more narrow field of view they can see less, so they create lines.");
         unusedUISayings["DepositStrengthSlider"].Add("When deposit is stronger it is more attractive to particles.");
-        unusedUISayings["AgentDepositStre thSlider"].Add("When agents emit deposit, they congregate together by following each other.");
+        unusedUISayings["AgentDepositStrengthSlider"].Add("When agents emit deposit, they congregate together by following each other.");
         unusedUISayings["AgentDepositStrengthSlider"].Add("When agents don't emit deposit, they wander amelessly unless there is static deposit to find.");
         unusedUISayings["Picker"].Add("I love colors!");
         unusedUISayings["Picker"].Add("I love the colors you chose!");
@@ -122,11 +143,6 @@ public class EncouragementBot : MonoBehaviour
         unusedUISayings["DrawMouseUp"].Add("Amazing!");
         unusedUISayings["DrawMouseUp"].Add("Beautiful!");
         unusedUISayings["DrawMouseUp"].Add("Gorgeous !");
-        */
-
-
-
-
     }
 
     /*private void prepUnusedUISayings()
