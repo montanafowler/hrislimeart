@@ -850,6 +850,7 @@ public class ComputeHookup : MonoBehaviour
             {
                 if (hit.transform.name == "DrawingCanvas")
                 {
+                    slimeBot.startedDrawing();
                     drawing = true;
                     float drawingCanvasWidth = drawingCanvas.transform.lossyScale.x / (drawingCanvas.transform.lossyScale.x + uiBox.transform.lossyScale.x) * Screen.width;
                     float uiBoxWidth = uiBox.transform.lossyScale.x / (drawingCanvas.transform.lossyScale.x + uiBox.transform.lossyScale.x) * Screen.width;

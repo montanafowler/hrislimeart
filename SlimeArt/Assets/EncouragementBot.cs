@@ -15,13 +15,14 @@ public class EncouragementBot : MonoBehaviour
         "SenseDistanceSlider", "TraceDecaySlider", "DrawMouseDown", "DrawMouseUp"};
     private TextMeshProUGUI robotWords; 
     private int lastMessageTimeStamp = 0;
+    private bool startedDrawingFlag = false;
    
     void Start()
     {
         
         prepUnusedGenericSayings();
         robotWords = GameObject.Find("RobotWords").GetComponent<TextMeshProUGUI>();
-        robotWords.SetText("\n" + getMessage());
+        robotWords.SetText("\nWelcome to SlimeArt!");
         lastMessageTimeStamp = 0;
     }
 
@@ -37,13 +38,19 @@ public class EncouragementBot : MonoBehaviour
 
     } 
 
+    public void startedDrawing()
+    {
+        startedDrawingFlag = true;
+        //Console.Log("started drawing");
+    }
+
     public void Update()
     {
-        /*if ((int)Time.time == (lastMessageTimeStamp + Random.Range(5, 10)))
+        if (((int)Time.time >= (lastMessageTimeStamp + Random.Range(10, 15))) && startedDrawingFlag)
         {
             robotWords.SetText("\n" + getMessage());
             lastMessageTimeStamp = (int)Time.time;
-        }*/
+        }
     }
 
     public void uiClicked(string ui, float value0, float value1, float value2)
@@ -79,8 +86,14 @@ public class EncouragementBot : MonoBehaviour
     private string getMessage()
     {
        // Random random = new Random();
-        int index = Random.Range(0, unusedGenericSayings.Count);
-        return unusedGenericSayings[index];
+       if (unusedGenericSayings.Count > 0)
+        {
+            int index = Random.Range(0, unusedGenericSayings.Count);
+            string message = unusedGenericSayings[index];
+            unusedGenericSayings.RemoveAt(index);
+            return message;
+        }
+        return ":)";
     }
 
     private void prepUnusedGenericSayings()
@@ -88,6 +101,70 @@ public class EncouragementBot : MonoBehaviour
         unusedGenericSayings.Add("Great job!");
         unusedGenericSayings.Add("Wow!");
         unusedGenericSayings.Add("You're so talented!");
+        unusedGenericSayings.Add("Cool scene!");
+        unusedGenericSayings.Add("This is great!");
+        unusedGenericSayings.Add("You have some great color combinations!");
+        unusedGenericSayings.Add("What a great design!");
+        unusedGenericSayings.Add("You’re really good at this!");
+        unusedGenericSayings.Add("Have you considered doing this professionally?");
+        unusedGenericSayings.Add("I wish I could make SlimeArt as good as you can.");
+        unusedGenericSayings.Add("I think you’re the best SlimeArtist I’ve seen!");
+        unusedGenericSayings.Add("I hope you keep doing SlimeArt.");
+        unusedGenericSayings.Add("I want to see more!");
+        unusedGenericSayings.Add("This is awesome!");
+        unusedGenericSayings.Add("I’m going to save this for my wall.");
+        unusedGenericSayings.Add("Someone should write some poetry about this.");
+        unusedGenericSayings.Add("Are you going to share this? It’s so cool!");
+        unusedGenericSayings.Add("I’m so moved by your work.");
+        unusedGenericSayings.Add("I love watching the particles.");
+        unusedGenericSayings.Add("What a talented generative artist!");
+        unusedGenericSayings.Add("What a great composition!");
+        unusedGenericSayings.Add("Cool drawing!");
+        unusedGenericSayings.Add("What texture!");
+        unusedGenericSayings.Add("This art lights up my life.");
+        unusedGenericSayings.Add("This is truly amazing.");
+        unusedGenericSayings.Add("You’re doing such a great job!");
+        unusedGenericSayings.Add("There’s no way this is your first day…");
+        unusedGenericSayings.Add("This is refreshing.");
+        unusedGenericSayings.Add("You inspire me.");
+        unusedGenericSayings.Add("You’re so creative.");
+        unusedGenericSayings.Add("I love how passionate you are.");
+        unusedGenericSayings.Add("You have a refreshing perspective.");
+        unusedGenericSayings.Add("You have great taste in particles.");
+        unusedGenericSayings.Add("Yum… deposit!");
+        unusedGenericSayings.Add("You have a beautiful soul.");
+        unusedGenericSayings.Add("Brilliant idea!");
+        unusedGenericSayings.Add("These are cool emergent networks you are creating!");
+        unusedGenericSayings.Add("You’re so skilled.");
+        unusedGenericSayings.Add("Look at that!");
+        unusedGenericSayings.Add("How’d you even do that!");
+        unusedGenericSayings.Add("A+");
+        unusedGenericSayings.Add("A++");
+        unusedGenericSayings.Add("A+++");
+        unusedGenericSayings.Add("So creative!");
+        unusedGenericSayings.Add("Picture perfect!");
+        unusedGenericSayings.Add("What style!");
+        unusedGenericSayings.Add("That’s unique!");
+        unusedGenericSayings.Add("I love watching this piece!");
+        unusedGenericSayings.Add("Great movement!");
+        unusedGenericSayings.Add("You rock!");
+        unusedGenericSayings.Add("Slimey!");
+        unusedGenericSayings.Add("You make co-creating with an algorithm look easy!"); 
+        unusedGenericSayings.Add("Woohoo!");
+        unusedGenericSayings.Add("I’m telling my friends about this one.");
+        unusedGenericSayings.Add("I can tell you’re working hard at this.");
+        unusedGenericSayings.Add("I mean… I’m pretty sure SlimeArt is your calling…");
+        unusedGenericSayings.Add("Keep going!");
+        unusedGenericSayings.Add("Add more particles!");
+        unusedGenericSayings.Add("Hello, Beautiful");
+        unusedGenericSayings.Add("I’m beyond proud of you.");
+        unusedGenericSayings.Add("I love your work.");
+        unusedGenericSayings.Add("When’s the art gallery opening??");
+        unusedGenericSayings.Add("Way to go!");
+        unusedGenericSayings.Add("Well done!");
+        unusedGenericSayings.Add("Nice work!");
+        unusedGenericSayings.Add("Best art I’ve seen all day.");
+        unusedGenericSayings.Add("One of a Kind!");
     }
 
     private void prepUnusedUISayings()
