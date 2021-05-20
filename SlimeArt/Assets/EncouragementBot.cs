@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class EncouragementBot : MonoBehaviour
 {
-    private HashSet<string> unusedGenericSayings = new HashSet<string>();
+    private List<string> unusedGenericSayings = new List<string>();
     private List<string> usedSayings = new List<string>();
     private Dictionary<string, List<string>> unusedUISayings
         = new Dictionary<string, List<string>>();
@@ -20,12 +20,12 @@ public class EncouragementBot : MonoBehaviour
         Debug.Log("ehllo");
         prepUnusedUISayings();
         prepUnusedGenericSayings();
-    }
+    } 
 
-    public string getMessage()
+    private string getMessage()
     {
-        Random random = new Random();
-        int index = random.Next(unusedGenericSayings.Count);
+       // Random random = new Random();
+        int index = Random.Range(0, unusedGenericSayings.Count);
         return unusedGenericSayings[index];
     }
 
