@@ -1,7 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
+using TMPro;
 public class EncouragementBot : MonoBehaviour
 {
     private List<string> unusedGenericSayings = new List<string>();
@@ -12,15 +13,30 @@ public class EncouragementBot : MonoBehaviour
     private string[] uiNames = { "Play", "Pause", "ClearCanvasButton", "ParticleBrushButton", "DepositBrushButton", "BrushSizeSlider",
     "BrushDensitySlider", "MoveDistanceSlider", "ScaleSlider", "DepositStrengthSlider", "AgentDepositStrengthSlider", "Picker", 
         "SenseDistanceSlider", "TraceDecaySlider", "DrawMouseDown", "DrawMouseUp"};
-   
+    private TextMeshProUGUI robotWords; 
+    private int lastMessageTimeStamp = 0;
+    void Start()
+    {
+        Debug.Log("ehllo");
+        prepUnusedUISayings();
+        prepUnusedGenericSayings();
+        robotWords = GameObject.Find("RobotWords").GetComponent<TextMeshProUGUI>();
+    }
 
     public EncouragementBot()
     {
         //prepUnusedUISayings();
-        Debug.Log("ehllo");
-        prepUnusedUISayings();
-        prepUnusedGenericSayings();
+       
     } 
+
+     void Update()
+    {
+        if ((int)Time.time % (lastMessageTimeStamp + Random.Range(20, 50)) == 0)
+        {
+            robotWords.SetText(getMessage());
+            lastMessageTimeStamp = (int)Time.time;
+        }
+    }
 
     private string getMessage()
     {
