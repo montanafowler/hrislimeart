@@ -159,6 +159,8 @@ public class ComputeHookup : MonoBehaviour
     void Start() {
         Debug.Log("Chosen Quality Level canvas " + GraphicsQualityMenu.CHOSEN_QUALITY_LEVEL);
         SAVED_QUALITY = GraphicsQualityMenu.CHOSEN_QUALITY_LEVEL;
+        TextMeshProUGUI label = GameObject.Find("FileLocation").GetComponent<TextMeshProUGUI>();
+        label.SetText(Application.persistentDataPath);
         //GraphicsQualityMenu.QUALITY_MENU_GAME_OBJECT.SetActive(false);
         // kernel is the propagate shader (initial spark)
         propagateKernel = propagate.FindKernel("CSMain");

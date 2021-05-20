@@ -19,6 +19,21 @@ public class EncouragementBot : MonoBehaviour
         //prepUnusedUISayings();
         Debug.Log("ehllo");
         prepUnusedUISayings();
+        prepUnusedGenericSayings();
+    }
+
+    public string getMessage()
+    {
+        Random random = new Random();
+        int index = random.Next(unusedGenericSayings.Count);
+        return unusedGenericSayings[index];
+    }
+
+    private void prepUnusedGenericSayings()
+    {
+        unusedGenericSayings.Add("Great job!");
+        unusedGenericSayings.Add("Wow!");
+        unusedGenericSayings.Add("You're so talented!");
     }
 
     private void prepUnusedUISayings()
@@ -30,14 +45,55 @@ public class EncouragementBot : MonoBehaviour
 
         Dictionary<string, List<string>>.KeyCollection keyColl =
     unusedUISayings.Keys;
-
-        // The elements of the KeyCollection are strongly typed
-        // with the type that was specified for dictionary keys.
-       
         foreach (string s in keyColl)
         {
            Debug.Log(s);
         }
+        /*
+        unusedUISayings["Play"].Add("Let's see it!");
+        unusedUISayings["Play"].Add("Let's go!");
+        unusedUISayings["Play"].Add("Exciting!");
+        unusedUISayings["Play"].Add("ahhhhhh");
+        unusedUISayings["Pause"].Add("Nice! Pausing is helpful when planning a design.");
+        unusedUISayings["Pause"].Add("I can't wait to see what you design.");
+        unusedUISayings["ClearCanvasButton"].Add("Time for a blank slate.");
+        unusedUISayings["ClearCanvasButton"].Add("Time to start fresh!");
+        unusedUISayings["ClearCanvasButton"].Add("Sometimes we just need to start over.");
+        unusedUISayings["ClearCanvasButton"].Add("Spring cleaning... or is it spring clearing... ;)");
+        unusedUISayings["ParticleBrushButton"].Add("You can modify so many settings of the particles!");
+        unusedUISayings["ParticleBrushButton"].Add("I can't wait to see what type of particles you make.");
+        unusedUISayings["DepositBrushButton"].Add("You can use the deposit brush to add some stability to your design.");
+        unusedUISayings["DepositBrushButton"].Add("Ooh what type of deposit designs will you make?!");
+        unusedUISayings["BrushSizeSlider"].Add("Playing with the size of the brush is a cool way to manage the amount of particles on the screen.");
+        unusedUISayings["BrushDensitySlider"].Add("A lower brush density has a sparser brush feel.");
+        unusedUISayings["BrushDensitySlider"].Add("A higher brush density has a denser feel.");
+        unusedUISayings["MoveDistanceSlider"].Add("I love a design with fast and slow moving particles!");
+        unusedUISayings["MoveDistanceSlider"].Add("slow and slimey wins the race...");
+        unusedUISayings["ScaleSlider"].Add("When particles have a wider field of view they can see more, so they spread out rather than create lines.");
+        unusedUISayings["ScaleSlider"].Add("When particles have a more narrow field of view they can see less, so they create lines.");
+        unusedUISayings["DepositStrengthSlider"].Add("When deposit is stronger it is more attractive to particles.");
+        unusedUISayings["AgentDepositStre thSlider"].Add("When agents emit deposit, they congregate together by following each other.");
+        unusedUISayings["AgentDepositStrengthSlider"].Add("When agents don't emit deposit, they wander amelessly unless there is static deposit to find.");
+        unusedUISayings["Picker"].Add("I love colors!");
+        unusedUISayings["Picker"].Add("I love the colors you chose!");
+        unusedUISayings["Picker"].Add("great colors!");
+        unusedUISayings["SenseDistanceSlider"].Add("When particles can sense deposit further ahead of them, they can explore farther.");
+        unusedUISayings["SenseDistanceSlider"].Add("Particles can be nearsighted or farsighted with the visibility distance setting.");
+        unusedUISayings["TraceDecaySlider"].Add("A trace decay of 0 leaves a permanent trace.");
+        unusedUISayings["TraceDecaySlider"].Add("A higher trace decay of leaves a shorter trace behind particles.");
+        unusedUISayings["DrawMouseDown"].Add("I can't wait to see what you draw!");
+        unusedUISayings["DrawMouseDown"].Add("Drawing Time!");
+        unusedUISayings["DrawMouseUp"].Add("Cool!");
+        unusedUISayings["DrawMouseUp"].Add("Woah!");
+        unusedUISayings["DrawMouseUp"].Add("Stunning!");
+        unusedUISayings["DrawMouseUp"].Add("Amazing!");
+        unusedUISayings["DrawMouseUp"].Add("Beautiful!");
+        unusedUISayings["DrawMouseUp"].Add("Gorgeous !");
+        */
+
+
+
+
     }
 
     /*private void prepUnusedUISayings()
@@ -68,7 +124,7 @@ public class EncouragementBot : MonoBehaviour
         unusedUISayings.Add("TraceDecaySlider", new List<string>());
         unusedUISayings.Add("DrawMouseDown", new List<string>());
         unusedUISayings.Add("DrawMouseUp", new List<string>());*/
-  //  }*/
+    //  }*/
 
     /*
      * 
