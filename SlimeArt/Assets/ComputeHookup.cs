@@ -377,7 +377,7 @@ public class ComputeHookup : MonoBehaviour
         depositSettingsTitle = GameObject.Find("DepositSettingsTitle0").GetComponent<TextMeshProUGUI>();
 
         moveDistanceSliderText = GameObject.Find("MoveDistanceSliderText").GetComponent<TextMeshProUGUI>();
-        moveDistanceSlider.onValueChanged.AddListener(delegate { updateSliderLabel(moveDistanceSliderText, "speed: ", moveDistanceSlider.value); userClickData["MoveDistanceSlider"].Add(new UIClickData(Time.time, "speed", moveDistanceSlider.value)); });
+        moveDistanceSlider.onValueChanged.AddListener(delegate { slimeBot.uiClicked("MoveDistanceSliderText", 0.0f, 0.0f, 0.0f); updateSliderLabel(moveDistanceSliderText, "speed: ", moveDistanceSlider.value); userClickData["MoveDistanceSlider"].Add(new UIClickData(Time.time, "speed", moveDistanceSlider.value)); });
         updateSliderLabel(moveDistanceSliderText, "speed: ", moveDistanceSlider.value);
         
         scaleSliderText = GameObject.Find("ScaleSliderText").GetComponent<TextMeshProUGUI>();

@@ -21,6 +21,8 @@ public class EncouragementBot : MonoBehaviour
         prepUnusedUISayings();
         prepUnusedGenericSayings();
         robotWords = GameObject.Find("RobotWords").GetComponent<TextMeshProUGUI>();
+        robotWords.SetText("\n" + getMessage());
+        lastMessageTimeStamp = 0;
     }
 
     public EncouragementBot()
@@ -31,10 +33,25 @@ public class EncouragementBot : MonoBehaviour
 
      void Update()
     {
-        if ((int)Time.time % (lastMessageTimeStamp + Random.Range(20, 50)) == 0)
+        if ((int)Time.time == (lastMessageTimeStamp + Random.Range(5, 15)))
         {
-            robotWords.SetText(getMessage());
+            robotWords.SetText("\n" + getMessage());
             lastMessageTimeStamp = (int)Time.time;
+        }
+    }
+
+    public void uiClicked(string ui, float value0, float value1, float value2)
+    {
+        if ((int)Time.time > (lastMessageTimeStamp + 5))
+        {
+            
+            List<string> messages = unusedUISayings[ui];
+            if (messages.Count > 0)
+            {
+                lastMessageTimeStamp = (int)Time.time;
+                int index = Random.Range(0, messages.Count);
+                robotWords.SetText("\n" + messages[index]);
+            }
         }
     }
 
