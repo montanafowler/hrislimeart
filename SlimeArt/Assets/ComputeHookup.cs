@@ -17,23 +17,7 @@ public class ComputeHookup : MonoBehaviour
     public ComputeShader decay;
     public ComputeShader blank_canvas_shader;
 
-    public ComputeBuffer initialGalaxyPositions;
-    public ComputeBuffer particles_x;
-    public ComputeBuffer particles_y;
-    public ComputeBuffer particles_theta;
-    public ComputeBuffer data_types;
     public ComputeBuffer blank_canvas;
-    public ComputeBuffer particle_id_buffer;
-    public ComputeBuffer move_distance_buffer;
-    public ComputeBuffer sense_distance_buffer;
-    public ComputeBuffer particle_deposit_strength_buffer;
-    public ComputeBuffer lifetime_buffer;
-    public ComputeBuffer particle_red_channel_buffer;
-    public ComputeBuffer particle_green_channel_buffer;
-    public ComputeBuffer particle_blue_channel_buffer;
-    public ComputeBuffer attracted_to_buffer;
-    public ComputeBuffer repelled_by_buffer;
-
     public ComputeBuffer x_y_theta_dataType_buffer;
     public ComputeBuffer moveDist_SenseDist_particleDepositStrength_lifetime_buffer;
     public ComputeBuffer red_green_blue_alpha_buffer;
@@ -46,15 +30,6 @@ public class ComputeHookup : MonoBehaviour
     public RenderTexture tex_trace_out;
     public Material mat;
 
-    public float half_sense_spread; // default = 15-30 degrees
-    public float sense_distance; // in world-space units; default = about 1/100 of the world 'cube' size
-    public float sense_distance_divisor; // 100.0f
-    public float turn_angle; // default = 15 degrees
-    public float move_distance; // in world-space units; default = about 1/5--1/3 of sense_distance
-    public float agent_deposit; // 0 for data-driven fitting, >0 for self-reinforcing behavior
-    public int world_width; //
-    public int world_height; // grid dimensions - note that the particle positions are also stored in the grid coordinates, but continuous
-    public int world_depth; //
     public float move_sense_coef;
     public float normalization_factor;
     public float deposit_strength;
@@ -63,64 +38,50 @@ public class ComputeHookup : MonoBehaviour
     public int pixelWidth;
     public int pixelHeight;
     public const float PI = 3.1415926535897931f;
-    public int swap;
+    public int swap; // for swaping textures every iteration
 
-    public Vector2[] linePositions;
-
+    //Sliders
     private Slider moveDistanceSlider;
     private Slider scaleSlider;
     private Slider depositStrengthSlider;
     private Slider agentDepositStrengthSlider;
     private Slider brushSizeSlider;
     private Slider brushDensitySlider;
-    private Slider lifetimeSlider;
+    //private Slider lifetimeSlider;
     private Slider traceDecaySlider;
-    
+    private Slider senseDistanceSlider;
 
+    // text for labels
     private TextMeshProUGUI moveDistanceSliderText;
     private TextMeshProUGUI scaleSliderText;
     private TextMeshProUGUI depositStrengthSliderText;
     private TextMeshProUGUI agentDepositStrengthSliderText;
     private TextMeshProUGUI brushSizeSliderText;
     private TextMeshProUGUI brushDensitySliderText;
-    private TextMeshProUGUI lifetimeSliderText;
-    private TextMeshProUGUI particleRedChannelSliderText;
-    private TextMeshProUGUI particleGreenChannelSliderText;
-    private TextMeshProUGUI particleBlueChannelSliderText;
-    private TextMeshProUGUI particleAlphaChannelSliderText;
+    //private TextMeshProUGUI lifetimeSliderText;
     private TextMeshProUGUI traceDecaySliderText;
+    private TextMeshProUGUI senseDistanceSliderText;
+
     private ColorPicker colorPicker;
     private TextMeshProUGUI depositSettingsTitle;
     private TextMeshProUGUI particleSettingsTitle;
-
-    //test ones
-    private TextMeshProUGUI senseDistanceSliderText;
-    private Slider senseDistanceSlider;
-
-
     private Button particleBrushButton;
     private Button depositBrushButton;
     private Button pauseButton;
     private Button playButton;
     private TMP_Dropdown viewDropdown;
+    
     private float OBSERVE_MODE = 2.0f;
-    private float DRAW_DEPOSIT_MODE = 3.0f;
-    private float DRAW_DEPOSIT_EMITTERS_MODE = 1.0f;
-    private float DRAW_PARTICLES_MODE = 0.0f;
-
     private float PARTICLE_VIEW = 1.0f;
     private float DEPOSIT_VIEW = 2.0f;
     private float TRACE_VIEW = 0.0f;
 
-    public float LOW_QUALITY_GRAPHICS = 0.0f;
-    public float MED_QUALITY_GRAPHICS = 1.0f;
-    public float HIGH_QUALITY_GRAPHICS = 2.0f;
-    public float ULTRA_QUALITY_GRAPHICS = 3.0f;
+    public const float LOW_QUALITY_GRAPHICS = 0.0f;
+    public const float MED_QUALITY_GRAPHICS = 1.0f;
+    public const float HIGH_QUALITY_GRAPHICS = 2.0f;
 
     private float PARTICLE = 1.0f;
     private float DEPOSIT_EMITTER = 2.0f;
-    private float DEPOSIT = 3.0f;
-    private float NO_DATA = 0.0f;
 
     private int available_data_index = 0;
     private int MAX_SPACE;
@@ -154,48 +115,43 @@ public class ComputeHookup : MonoBehaviour
 
     private EncouragementBot slimeBot;
 
-    void Awake()
-    {
+    /*
+     * initialize slimebot when program starts.
+     */
+    void Awake()  {
         slimeBot = GetComponent<EncouragementBot>();
 
     }
 
-    //public Camera camera;
-    // Start is called before the first frame update
+    /*
+     * on start!
+     */
     void Start() {
-        Debug.Log("Chosen Quality Level canvas " + GraphicsQualityMenu.CHOSEN_QUALITY_LEVEL);
         SAVED_QUALITY = GraphicsQualityMenu.CHOSEN_QUALITY_LEVEL;
+        
+        // set label where csv click data will be saved when app quits
         TextMeshProUGUI label = GameObject.Find("FileLocation").GetComponent<TextMeshProUGUI>();
         label.SetText(Application.persistentDataPath);
         
-        //GraphicsQualityMenu.QUALITY_MENU_GAME_OBJECT.SetActive(false);
-        // kernel is the propagate shader (initial spark)
         propagateKernel = propagate.FindKernel("CSMain");
         GameObject uiBox = GameObject.Find("CubeUI");
         GameObject drawingCanvas = GameObject.Find("DrawingCanvas");
         pixelWidth = (int)(drawingCanvas.transform.lossyScale.x / (drawingCanvas.transform.lossyScale.x + uiBox.transform.lossyScale.x) * Screen.width);
         pixelHeight = Screen.height;
-        //pixelWidth = Screen.width;
-        Debug.Log("pixelWidth, height " + Screen.width + " " + Screen.height);
-
-        if (SAVED_QUALITY == 0.0f) {
+        
+        if (SAVED_QUALITY == LOW_QUALITY_GRAPHICS) {
             MAX_SPACE = 100000;
         }
 
-        if (SAVED_QUALITY == 1.0f) {
+        if (SAVED_QUALITY == MED_QUALITY_GRAPHICS) {
             MAX_SPACE = 900000;
         }
 
-        if (SAVED_QUALITY == 2.0f)
-        {
+        if (SAVED_QUALITY == HIGH_QUALITY_GRAPHICS) {
             MAX_SPACE = 2000000;
         }
 
-        //MAX_SPACE = 100000;//pixelHeight * pixelWidth * 5;
-        MAX_NUM_PARTICLES = MAX_SPACE / 4;
-
-        Debug.Log("MAX_SPACE " + MAX_SPACE);
-
+        MAX_NUM_PARTICLES = MAX_SPACE / 4; // buffers have to have info for four
         COMPUTE_GRID_HEIGHT = 256;
         COMPUTE_GRID_WIDTH = MAX_SPACE / COMPUTE_GRID_HEIGHT;
         mat.mainTextureOffset = new Vector2(0.0f, 0.0f);
@@ -208,119 +164,36 @@ public class ComputeHookup : MonoBehaviour
         blank_canvas_shader.Dispatch(blank_canvas_shader.FindKernel("CSMain"), COMPUTE_GRID_WIDTH, COMPUTE_GRID_HEIGHT, 1);
 
         previousMousePosition = new Vector3(0.0f, 0.0f, 0.0f);
-
-#if UNITY_EDITOR
-            //string path = "Assets/Resources/data.txt";
-            string dir = Application.dataPath + "/../";
-            string txtname = "data.txt";
-            string textPath = Path.Combine(dir, txtname);
-
-                //Write some text to the test.txt file
-              // // StreamWriter writer = new StreamWriter(dir, false);
-              //  writer.WriteLine("Test from compute hookup2");
-              //  writer.Close();
-
-                //Re-import the file to update the reference in the editor
-               // AssetDatabase.ImportAsset(path);
-              //  TextAsset asset = Resources.Load<TextAsset>("data");
-
-                //Print the text from the file
-             //   Debug.Log(asset.text);
-       // Debug.Log("wrote into " + dir);
-#endif
-
-    }
-
-    void setUpCanvas() {
-        // kernel is the propagate shader (initial spark)
-        propagateKernel = propagate.FindKernel("CSMain");
-        pixelHeight = Screen.height;
-        pixelWidth = Screen.width;
-        GameObject uiBox = GameObject.Find("CubeUI");
-        // Debug.Log(uiBox.transform.lossyScale);
-        GameObject drawingCanvas = GameObject.Find("DrawingCanvas");
-        float pixelWidthDrawingCanvas = drawingCanvas.transform.lossyScale.x / (drawingCanvas.transform.lossyScale.x + uiBox.transform.lossyScale.x) * pixelWidth;
-
-
-        MAX_SPACE = 100000;//pixelHeight * pixelWidth * 5;
-        MAX_NUM_PARTICLES = MAX_SPACE / 4;
-
-        Debug.Log("MAX_SPACE " + MAX_SPACE);
-
-        COMPUTE_GRID_HEIGHT = 256;
-        COMPUTE_GRID_WIDTH = MAX_SPACE / COMPUTE_GRID_HEIGHT;
-        mat.mainTextureOffset = new Vector2(0.0f, 0.0f);
-
-        calculateGroupTheoryIncrement();
-        setupBuffers(); // sets up the buffers with their info.
-        setupUI();
-
-        blank_canvas_shader.SetTexture(blank_canvas_shader.FindKernel("CSMain"), "Result", particle_render_texture);
-        blank_canvas_shader.Dispatch(blank_canvas_shader.FindKernel("CSMain"), COMPUTE_GRID_WIDTH, COMPUTE_GRID_HEIGHT, 1);
-
-        // dispatch the texture
-        propagate.Dispatch(propagateKernel, COMPUTE_GRID_WIDTH, COMPUTE_GRID_HEIGHT, 1);
-        swap = 0; // alternating copying
     }
 
     void setupBuffers() {
         // random seeding of arrays
-        float[] xParticlePositions = new float[MAX_SPACE];
-        float[] yParticlePositions = new float[MAX_SPACE];
-        float[] thetaParticles = new float[MAX_SPACE];
-        float[] dataTypes = new float[MAX_SPACE];
         float[] blankCanvas = new float[MAX_SPACE];
-        float[] moveDistanceBuffer = new float[MAX_SPACE];
-        string[] particleIdBuffer = new string[MAX_SPACE];
-        float[] senseDistanceBuffer = new float[MAX_SPACE];
-        float[] particleDepositStrengthBuffer = new float[MAX_SPACE];
-        float[] lifetimeBuffer = new float[MAX_SPACE];
-        float[] particleRedChannelBuffer = new float[MAX_SPACE];
-        float[] particleGreenChannelBuffer = new float[MAX_SPACE];
-        float[] particleBlueChannelBuffer = new float[MAX_SPACE];
-        string[] attractedToBuffer = new string[MAX_SPACE];
-        string[] repelledByBuffer = new string[MAX_SPACE];
-
         float[] x_y_theta_dataType_array = new float[MAX_SPACE];
         float[] moveDist_SenseDist_particleDepositStrength_lifetime_array = new float[MAX_SPACE];
         float[] red_green_blue_alpha_array = new float[MAX_SPACE];
         float[] turn_sense_angles_array = new float[MAX_SPACE];
-        //attractedTo
-        //repelledBy
-
-        // x particle positions
-        //particles_x = initializeComputeBuffer(xParticlePositions, "particles_x", propagateKernel);
-
-        // y particle positions
-        //particles_y = initializeComputeBuffer(yParticlePositions, "particles_y", propagateKernel);
-
-        // particles theta
-        //particles_theta = initializeComputeBuffer(thetaParticles, "particles_theta", propagateKernel);
-
-        // data types, like if it is deposit emitter, particle, deposit, or no data
-        //data_types = initializeComputeBuffer(dataTypes, "data_types", propagateKernel);
-
+        
         //x,y,theta,data
-      //  x_y_theta_dataType_buffer.Release();
+        //x_y_theta_dataType_buffer.Release();
         x_y_theta_dataType_buffer = initializeComputeBuffer(x_y_theta_dataType_array, "x_y_theta_dataType", propagateKernel);
 
         //moveDist,senseDist,particleDepositStrength,lifetime
-      //  moveDist_SenseDist_particleDepositStrength_lifetime_buffer.Release();
+        //moveDist_SenseDist_particleDepositStrength_lifetime_buffer.Release();
         moveDist_SenseDist_particleDepositStrength_lifetime_buffer = initializeComputeBuffer(moveDist_SenseDist_particleDepositStrength_lifetime_array, 
             "moveDist_SenseDist_particleDepositStrength_lifetime", propagateKernel);
 
         //red,green,blue,alpha
-       // red_green_blue_alpha_buffer.Release();
+        //red_green_blue_alpha_buffer.Release();
         red_green_blue_alpha_buffer = initializeComputeBuffer(red_green_blue_alpha_array, "red_green_blue_alpha", propagateKernel);
 
-      //  turn_sense_angles_buffer.Release();
+        //turn_sense_angles_buffer.Release();
         turn_sense_angles_buffer = initializeComputeBuffer(turn_sense_angles_array, "turn_sense_angles", propagateKernel);
 
-       // blank_canvas.Release();
+        //blank_canvas.Release();
         blank_canvas = initializeComputeBuffer(blankCanvas, "blank_canvas", blank_canvas_shader.FindKernel("CSMain"));
 
         // deposit texture for propagate shader
-        //tex_deposit = initializeRenderTexture();
         deposit_in = initializeRenderTexture();
         deposit_out = initializeRenderTexture();
         particle_render_texture = initializeRenderTexture();
@@ -332,13 +205,6 @@ public class ComputeHookup : MonoBehaviour
 
     void setupUI() {
         // other variables
-        world_width = Screen.width;
-        world_height = Screen.height;
-        half_sense_spread = Random.Range(15.0f, 30.0f);
-        sense_distance_divisor = 100.0f;
-        turn_angle = 15.0f;
-        move_distance = 0.001f;
-        agent_deposit = 0.0001f;
         move_sense_coef = 1.0f;
         normalization_factor = 2.0f;
 
@@ -368,16 +234,9 @@ public class ComputeHookup : MonoBehaviour
         brushDensitySlider = GameObject.Find("BrushDensitySlider").GetComponent<Slider>();
         //lifetimeSlider = GameObject.Find("ParticleLifetimeSlider").GetComponent<Slider>();
         colorPicker = GameObject.Find("Picker").GetComponent<ColorPicker>();
-        //moveDistanceSliderTest = GameObject.Find("MoveDistanceSliderTest").GetComponent<Slider>();
-        //turnAngleSlider = GameObject.Find("TurnAngleSlider").GetComponent<Slider>();
-        //senseAngleSlider = GameObject.Find("SenseAngleSlider").GetComponent<Slider>();
         senseDistanceSlider = GameObject.Find("SenseDistanceSlider").GetComponent<Slider>();
         traceDecaySlider = GameObject.Find("TraceDecaySlider").GetComponent<Slider>();
 
-        move_distance = moveDistanceSlider.value;
-        sense_distance = scaleSlider.value;
-        //deposit_strength = depositStrengthSlider.value;
-        //agent_deposit = agentDepositStrengthSlider.value;
         brush_size = brushSizeSlider.value;
 
         particleSettingsTitle = GameObject.Find("ParticleSettingsTitle").GetComponent<TextMeshProUGUI>();
@@ -415,20 +274,6 @@ public class ComputeHookup : MonoBehaviour
         //lifetimeSlider.onValueChanged.AddListener(delegate { updateSliderLabel(lifetimeSliderText, "Particle Lifetime: ", lifetimeSlider.value); });
         //updateSliderLabel(lifetimeSliderText, "Particle Lifetime: ", lifetimeSlider.value);
 
-
-        //TEST SLIDERS TRYING TO FIND GOOD VALUES
-        //turnAngleSliderText = GameObject.Find("TurnAngleSliderText").GetComponent<TextMeshProUGUI>();
-       // turnAngleSlider.onValueChanged.AddListener(delegate { updateSliderLabel(turnAngleSliderText, "test turn angle: ", turnAngleSlider.value); });
-       // updateSliderLabel(turnAngleSliderText, "test turn angle: ", turnAngleSlider.value);
-
-      //  senseAngleSliderText = GameObject.Find("SenseAngleSliderText").GetComponent<TextMeshProUGUI>();
-      //  senseAngleSlider.onValueChanged.AddListener(delegate { updateSliderLabel(senseAngleSliderText, "test sense angle: ", senseAngleSlider.value); });
-      //  updateSliderLabel(senseAngleSliderText, "test sense angle: ", senseAngleSlider.value);
-
-      //  moveDistanceSliderTestText = GameObject.Find("MoveDistanceSliderTestText").GetComponent<TextMeshProUGUI>();
-      //  moveDistanceSliderTest.onValueChanged.AddListener(delegate { updateSliderLabel(moveDistanceSliderTestText, "test move distance: ", moveDistanceSliderTest.value); });
-     //   updateSliderLabel(moveDistanceSliderTestText, "test move distance: ", moveDistanceSliderTest.value);
-
         senseDistanceSliderText = GameObject.Find("SenseDistanceSliderText").GetComponent<TextMeshProUGUI>();
         senseDistanceSlider.onValueChanged.AddListener(delegate { slimeBot.uiClicked("SenseDistanceSlider", depositStrengthSlider.value, 0.0f, 0.0f); updateSliderLabel(senseDistanceSliderText, "visibility distance: ", senseDistanceSlider.value); userClickData["SenseDistanceSlider"].Add(new UIClickData(Time.time, "visibility distance", senseDistanceSlider.value)); });
         updateSliderLabel(senseDistanceSliderText, "visibility distance: ", senseDistanceSlider.value);
@@ -453,25 +298,16 @@ public class ComputeHookup : MonoBehaviour
             userClickData["Picker"].Add(new UIClickData(Time.time, "red", color.r, "green", color.g, "blue", color.b));
         });
 
-        //modeDropdown.onValueChanged.AddListener(delegate { changeMode(modeDropdown.value);  });
-
-
-        //viewDropdown.onValueChanged.AddListener(delegate { changeMode(viewDropdown.value); });
-
         //Button playButton = GameObject.Find("PlayButton").GetComponent<Button>();
         Button clearCanvasButton = GameObject.Find("ClearCanvasButton").GetComponent<Button>();
-        clearCanvasButton.onClick.AddListener(delegate { slimeBot.uiClicked("ClearCanvasButton", depositStrengthSlider.value, 0.0f, 0.0f); Debug.Log("clear"); setupBuffers(); /*updatepropagateShaderVariables(deposit_in);*/ });
-
-        
-        
+        clearCanvasButton.onClick.AddListener(delegate { slimeBot.uiClicked("ClearCanvasButton", depositStrengthSlider.value, 0.0f, 0.0f); Debug.Log("clear"); setupBuffers();  });
     }
 
     void brushSwitch(bool particleBrush) {
-
-        if (particleBrush)
-        {
-            particleBrushButton.interactable = false; 
-            depositBrushButton.interactable = true;
+        // if the particle brush button was clicked
+        if (particleBrush) {
+            particleBrushButton.interactable = false; // grey out particle button
+            depositBrushButton.interactable = true; // activate deposit button
 
             moveDistanceSlider.enabled = true;
             moveDistanceSlider.interactable = true;
@@ -499,25 +335,17 @@ public class ComputeHookup : MonoBehaviour
 
             depositStrengthSlider.enabled = false;
             depositStrengthSlider.interactable = false;
-            //depositStrengthSlider.gameObject.GetComponent<Renderer>().enabled = false;
             depositStrengthSlider.gameObject.SetActive(false);
             depositSettingsTitle.gameObject.SetActive(false);
 
-            if (viewDropdown.value == (int)DEPOSIT_VIEW)
-            {
-                viewDropdown.value = (int)TRACE_VIEW;
+            if (viewDropdown.value == (int)DEPOSIT_VIEW)  {
+                viewDropdown.value = (int)TRACE_VIEW; // switch to trace view automatically
             }
-            
-        } else
-        {
-
+        } else {
+            // deposit brush button clicked
             particleSettingsTitle.GetComponent<TextMeshProUGUI>().gameObject.SetActive(false);
-           // Debug.Log(GameObject.Find("DepositSettingsTitle0"));
-           // Debug.Log(GameObject.Find("DepositSettingsTitle0").GetComponent<TextMeshProUGUI>());
             depositSettingsTitle.GetComponent<TextMeshProUGUI>().gameObject.SetActive(true);
             colorPicker.gameObject.SetActive(false);
-
-
             particleBrushButton.interactable = true;
             depositBrushButton.interactable = false;
             moveDistanceSlider.enabled = false;
@@ -535,16 +363,17 @@ public class ComputeHookup : MonoBehaviour
             senseDistanceSlider.enabled = false;
             senseDistanceSlider.interactable = false;
             senseDistanceSlider.gameObject.SetActive(false);
-
             depositStrengthSlider.enabled = true;
             depositStrengthSlider.interactable = true;
             depositStrengthSlider.gameObject.SetActive(true);
-            viewDropdown.value = (int)DEPOSIT_VIEW;
+            viewDropdown.value = (int)DEPOSIT_VIEW; // automatically switch to deposit view
         }
     }
 
-    void pausePlaySwitch(bool play)
-    {
+    /*
+     * switch between pause and play when button is clicked.
+     */
+    void pausePlaySwitch(bool play) {
         playButton.interactable = !play; //false if play button was pushed
         pauseButton.interactable = play; //true of play button was pushed
         if (play)
@@ -583,22 +412,14 @@ public class ComputeHookup : MonoBehaviour
     }
 
     void updatepropagateShaderVariables(RenderTexture depositTexture, RenderTexture traceTexture) {
-        sense_distance = scaleSlider.value;
-        move_distance = moveDistanceSlider.value;
         deposit_strength = depositStrengthSlider.value;
-        agent_deposit = agentDepositStrengthSlider.value;
 
         int propagateKernel = propagate.FindKernel("CSMain");
 
         propagate.SetTexture(propagateKernel, "tex_deposit", depositTexture);
         propagate.SetTexture(propagateKernel, "tex_trace", traceTexture);
-        propagate.SetFloat("half_sense_spread", scaleSlider.value * (90.0f-20.0f) + 20.0f); // 15 to 30 degrees default
-                                                                                            //  propagate.SetFloat("sense_distance", sense_distance); // in world-space units; default = about 1/100 of the world 'cube' size
-        propagate.SetFloat("turn_angle", (1.0f - scaleSlider.value) * (45.0f - 10.0f) + 10.0f) ; // 15.0 is default
-      //  propagate.SetFloat("move_distance", move_distance);//worldHeight / 100.0f / 4.0f); //  in world-space units; default = about 1/5--1/3 of sense_distance
-       // propagate.SetFloat("agent_deposit", agent_deposit); // 15.0 is default
-        propagate.SetFloat("world_width", (float)world_width);
-        propagate.SetFloat("world_height", (float)world_height);
+        propagate.SetFloat("world_width", (float)pixelWidth);
+        propagate.SetFloat("world_height", (float)pixelHeight);
         propagate.SetFloat("move_sense_coef", move_sense_coef); // ?
         propagate.SetFloat("normalization_factor", normalization_factor); // ?
         propagate.SetFloat("pixelWidth", pixelWidth);
