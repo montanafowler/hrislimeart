@@ -4,5 +4,6 @@ SlimeArt is a generative art tool for artists to create dynamic pieces out of an
 
 ![Image of SlimeArt w/SlimeBot](https://raw.githubusercontent.com/montanafowler/hrislimeart/main/images/slimeBot.png?token=AF3OOTNT6QHUL5EDDYJGL6LAWKWPS)
 
-
 To download an executable of the application, select from the resolution options in the executables folder. Unfortunately, SlimeArt works exclusively on Windows machines due to its dependency on compute shaders.
+
+![SlimeBot](https://raw.githubusercontent.com/montanafowler/hrislimeart/main/images/robot2.png?token=AF3OOTP2PL7FEGN4RDAOUBDAWKWZE)
