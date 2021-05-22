@@ -166,6 +166,9 @@ public class ComputeHookup : MonoBehaviour
         previousMousePosition = new Vector3(0.0f, 0.0f, 0.0f);
     }
 
+    /*
+     * sets up the buffers for the shaders
+     */
     void setupBuffers() {
         // random seeding of arrays
         float[] blankCanvas = new float[MAX_SPACE];
@@ -203,11 +206,26 @@ public class ComputeHookup : MonoBehaviour
         tex_trace_out = initializeRenderTexture();
     }
 
+
+    /*
+     * sets up all of the ui components and on click functions
+     */
     void setupUI() {
         // other variables
         move_sense_coef = 1.0f;
         normalization_factor = 2.0f;
 
+        setupUIClickData();
+        initializeSliders();
+        initializeTitlesAndText();
+        setupDropdownsButtonsAndTheColorPicker();
+    }
+
+    /*
+     * set up the ui click data dictionary
+     */
+    private void setupUIClickData()
+    {
         userClickData.Add("ViewDropdown", new List<UIClickData>());
         userClickData.Add("Play", new List<UIClickData>());
         userClickData.Add("Pause", new List<UIClickData>());
@@ -225,7 +243,12 @@ public class ComputeHookup : MonoBehaviour
         userClickData.Add("TraceDecaySlider", new List<UIClickData>());
         userClickData.Add("DrawMouseDown", new List<UIClickData>());
         userClickData.Add("DrawMouseUp", new List<UIClickData>());
+    }
 
+    /*
+     * initialize the slidre variables
+     */
+    private void initializeSliders()  {
         moveDistanceSlider = GameObject.Find("MoveDistanceSlider").GetComponent<Slider>();
         scaleSlider = GameObject.Find("ScaleSlider").GetComponent<Slider>();
         depositStrengthSlider = GameObject.Find("DepositStrengthSlider").GetComponent<Slider>();
@@ -236,16 +259,20 @@ public class ComputeHookup : MonoBehaviour
         colorPicker = GameObject.Find("Picker").GetComponent<ColorPicker>();
         senseDistanceSlider = GameObject.Find("SenseDistanceSlider").GetComponent<Slider>();
         traceDecaySlider = GameObject.Find("TraceDecaySlider").GetComponent<Slider>();
+    }
 
-        brush_size = brushSizeSlider.value;
-
+    /*
+     * initialize titles and text
+     */
+    private void initializeTitlesAndText()
+    {
         particleSettingsTitle = GameObject.Find("ParticleSettingsTitle").GetComponent<TextMeshProUGUI>();
         depositSettingsTitle = GameObject.Find("DepositSettingsTitle0").GetComponent<TextMeshProUGUI>();
 
         moveDistanceSliderText = GameObject.Find("MoveDistanceSliderText").GetComponent<TextMeshProUGUI>();
         moveDistanceSlider.onValueChanged.AddListener(delegate { slimeBot.uiClicked("MoveDistanceSlider", moveDistanceSlider.value, 0.0f, 0.0f); updateSliderLabel(moveDistanceSliderText, "speed: ", moveDistanceSlider.value); userClickData["MoveDistanceSlider"].Add(new UIClickData(Time.time, "speed", moveDistanceSlider.value)); });
         updateSliderLabel(moveDistanceSliderText, "speed: ", moveDistanceSlider.value);
-        
+
         scaleSliderText = GameObject.Find("ScaleSliderText").GetComponent<TextMeshProUGUI>();
         scaleSlider.onValueChanged.AddListener(delegate { slimeBot.uiClicked("ScaleSlider", scaleSlider.value, 0.0f, 0.0f); updateSliderLabel(scaleSliderText, "field of view: ", scaleSlider.value); userClickData["ScaleSlider"].Add(new UIClickData(Time.time, "field of view", scaleSlider.value)); });
         updateSliderLabel(scaleSliderText, "field of view: ", scaleSlider.value);
@@ -263,7 +290,7 @@ public class ComputeHookup : MonoBehaviour
         updateSliderLabel(brushSizeSliderText, "brush size: ", brushSizeSlider.value);
 
         brushDensitySliderText = GameObject.Find("BrushDensitySliderText").GetComponent<TextMeshProUGUI>();
-        brushDensitySlider.onValueChanged.AddListener(delegate { slimeBot.uiClicked("BrushDensitySlider", depositStrengthSlider.value, 0.0f, 0.0f); updateSliderLabel(brushDensitySliderText, "brush density: ", 50+brushDensitySlider.value); userClickData["BrushDensitySlider"].Add(new UIClickData(Time.time, "brush density", 50 + brushDensitySlider.value)); });
+        brushDensitySlider.onValueChanged.AddListener(delegate { slimeBot.uiClicked("BrushDensitySlider", depositStrengthSlider.value, 0.0f, 0.0f); updateSliderLabel(brushDensitySliderText, "brush density: ", 50 + brushDensitySlider.value); userClickData["BrushDensitySlider"].Add(new UIClickData(Time.time, "brush density", 50 + brushDensitySlider.value)); });
         updateSliderLabel(brushDensitySliderText, "brush density: ", 50 + brushDensitySlider.value);
 
         traceDecaySliderText = GameObject.Find("TraceDecaySliderText").GetComponent<TextMeshProUGUI>();
@@ -278,31 +305,44 @@ public class ComputeHookup : MonoBehaviour
         senseDistanceSlider.onValueChanged.AddListener(delegate { slimeBot.uiClicked("SenseDistanceSlider", depositStrengthSlider.value, 0.0f, 0.0f); updateSliderLabel(senseDistanceSliderText, "visibility distance: ", senseDistanceSlider.value); userClickData["SenseDistanceSlider"].Add(new UIClickData(Time.time, "visibility distance", senseDistanceSlider.value)); });
         updateSliderLabel(senseDistanceSliderText, "visibility distance: ", senseDistanceSlider.value);
 
+    }
+
+    /*
+     * set up the buttons, dropdowns, and the color picker
+     */
+    private void setupDropdownsButtonsAndTheColorPicker()  {
         viewDropdown = GameObject.Find("ViewDropdown").GetComponent<TMP_Dropdown>();
         viewDropdown.onValueChanged.AddListener(delegate { slimeBot.uiClicked("ViewDropdown", depositStrengthSlider.value, 0.0f, 0.0f); userClickData["ViewDropdown"].Add(new UIClickData(Time.time, "view", viewDropdown.value)); });
+        
+        // brush buttons setup
         particleBrushButton = GameObject.Find("ParticleBrushButton").GetComponent<Button>();
         depositBrushButton = GameObject.Find("DepositBrushButton").GetComponent<Button>();
-        particleBrushButton.onClick.AddListener(delegate { slimeBot.uiClicked("ParticleBrushButton", depositStrengthSlider.value, 0.0f, 0.0f); brushSwitch(true); userClickData["ParticleBrushButton"].Add(new UIClickData(Time.time, "particle brush button click", 1.0f)); }); 
+        particleBrushButton.onClick.AddListener(delegate { slimeBot.uiClicked("ParticleBrushButton", depositStrengthSlider.value, 0.0f, 0.0f); brushSwitch(true); userClickData["ParticleBrushButton"].Add(new UIClickData(Time.time, "particle brush button click", 1.0f)); });
         depositBrushButton.onClick.AddListener(delegate { slimeBot.uiClicked("DepositBrushButton", depositStrengthSlider.value, 0.0f, 0.0f); brushSwitch(false); userClickData["DepositBrushButton"].Add(new UIClickData(Time.time, "deposit brush button click", 1.0f)); });
         brushSwitch(true); // set particle brush to be selected first
 
+        // play pause setup
         playButton = GameObject.Find("Play").GetComponent<Button>();
         pauseButton = GameObject.Find("Pause").GetComponent<Button>();
         playButton.onClick.AddListener(delegate { slimeBot.uiClicked("Play", depositStrengthSlider.value, 0.0f, 0.0f); pausePlaySwitch(true); userClickData["Play"].Add(new UIClickData(Time.time, "play button click", 1.0f)); });
         pauseButton.onClick.AddListener(delegate { slimeBot.uiClicked("Pause", depositStrengthSlider.value, 0.0f, 0.0f); pausePlaySwitch(false); userClickData["Pause"].Add(new UIClickData(Time.time, "pause button click", 1.0f)); });
         pausePlaySwitch(true);
 
-        colorPicker.onValueChanged.AddListener(color =>
-        {
-            slimeBot.uiClicked("Picker", color.r, color.g, color.b) ;
+        // color picker on change
+        colorPicker.onValueChanged.AddListener(color => {
+            slimeBot.uiClicked("Picker", color.r, color.g, color.b);
             userClickData["Picker"].Add(new UIClickData(Time.time, "red", color.r, "green", color.g, "blue", color.b));
         });
 
-        //Button playButton = GameObject.Find("PlayButton").GetComponent<Button>();
+        //clear canvas button;
         Button clearCanvasButton = GameObject.Find("ClearCanvasButton").GetComponent<Button>();
-        clearCanvasButton.onClick.AddListener(delegate { slimeBot.uiClicked("ClearCanvasButton", depositStrengthSlider.value, 0.0f, 0.0f); Debug.Log("clear"); setupBuffers();  });
+        clearCanvasButton.onClick.AddListener(delegate { slimeBot.uiClicked("ClearCanvasButton", depositStrengthSlider.value, 0.0f, 0.0f); setupBuffers(); });
+
     }
 
+    /*
+     * when the user switches buttons hide/show the appropriate UI
+     */
     void brushSwitch(bool particleBrush) {
         // if the particle brush button was clicked
         if (particleBrush) {
@@ -376,46 +416,56 @@ public class ComputeHookup : MonoBehaviour
     void pausePlaySwitch(bool play) {
         playButton.interactable = !play; //false if play button was pushed
         pauseButton.interactable = play; //true of play button was pushed
-        if (play)
-        {
+        if (play)  {
             playingOrPausing = 0; //play
-        } else
-        {
+        } else {
             playingOrPausing = 1; //pause
         }
     }
 
-    void calculateGroupTheoryIncrement() {
+    /*
+     * calculate group theory increment for teting group theory storage management
+     */
+    private void calculateGroupTheoryIncrement() {
         group_theory_increment = 3;
         while (MAX_SPACE % group_theory_increment == 0) {
             group_theory_increment++;
         }
-        //Debug.Log("group_theory_increment " + group_theory_increment);
     }
 
+    /*
+     * update the slider label
+     */
     public void updateSliderLabel(TextMeshProUGUI label, string labelText, float value) {
         label.SetText(labelText + value.ToString());
     }
 
-    ComputeBuffer initializeComputeBuffer(float[] arr, string shaderBufferName, int propagateKernel) {
+    /*
+     * initialize a compute buffer and add it to the propagate shader
+     */
+    private ComputeBuffer initializeComputeBuffer(float[] arr, string shaderBufferName, int propagateKernel) {
         ComputeBuffer computeBuffer = new ComputeBuffer(arr.Length, sizeof(float));
         computeBuffer.SetData(arr);
         propagate.SetBuffer(propagateKernel, shaderBufferName, computeBuffer);
         return computeBuffer;
     }
 
-    RenderTexture initializeRenderTexture() {
+    /*
+     * initialize render texture 
+     */
+    private RenderTexture initializeRenderTexture() {
         RenderTexture renderTexture = new RenderTexture(pixelWidth, pixelHeight, 32);
         renderTexture.enableRandomWrite = true;
         renderTexture.Create();
         return renderTexture;
     }
 
+    /*
+     * update the propagate shader variables
+     */
     void updatepropagateShaderVariables(RenderTexture depositTexture, RenderTexture traceTexture) {
         deposit_strength = depositStrengthSlider.value;
-
         int propagateKernel = propagate.FindKernel("CSMain");
-
         propagate.SetTexture(propagateKernel, "tex_deposit", depositTexture);
         propagate.SetTexture(propagateKernel, "tex_trace", traceTexture);
         propagate.SetFloat("world_width", (float)pixelWidth);
@@ -431,15 +481,15 @@ public class ComputeHookup : MonoBehaviour
         propagate.SetInt("playingOrPausing", playingOrPausing);
     }
 
+    /*
+     * get the next available index based on the selected space management system
+     */
     int getNextAvailableIndex() {
         int spaceManagement = STOCHASTIC_SPACE_MANAGEMENT;
-        //GROUP_THEORY_SPACE_MANAGEMENT; UNAVAILABLE RN....
-        //LINEAR_SPACE_MANAGEMENT;
         switch(spaceManagement) {
             case LINEAR_SPACE_MANAGEMENT:
                 available_data_index += 4;
                 if (available_data_index >= MAX_SPACE) {
-                    Debug.Log("LINEAR MAX SPACE REACHED");
                     available_data_index = 0;
                 }
                 break;
@@ -459,16 +509,12 @@ public class ComputeHookup : MonoBehaviour
     }
 
 
-
-    void draw(float x, float y)
-    {
-        // TODODODODODODOD GET THE OFFSET RIGHT, somehow the width of the UI cube
-        float centerX = Screen.width - x;///Screen.width - x;// - pixelWidth*4/19;// + (mat.mainTextureOffset.x * pixelWidth * mat.mainTextureScale.x);
+    /*
+     * draw the particles centered at x,y on the canvas with the saved settings
+     */
+    void draw(float x, float y) {
+        float centerX = Screen.width - x;
         float centerY = pixelHeight - y;
-        //Debug.Log("centerX " + centerX);
-        //  Debug.Log("centerY " + centerY);
-
-
         float[] x_y_theta_dataType_array = new float[MAX_SPACE];
         float[] moveDist_SenseDist_particleDepositStrength_lifetime_array = new float[MAX_SPACE];
         float[] red_green_blue_alpha_array = new float[MAX_SPACE];
@@ -482,26 +528,22 @@ public class ComputeHookup : MonoBehaviour
         brush_size = (brushSizeSlider.value + 1) / 2;
         int brush_density = (int)brushDensitySlider.value * -1;
 
-        if (SAVED_QUALITY == 0.0f && brush_density < 5)
-        {
-            brush_density = 5;
+        if (SAVED_QUALITY == 0.0f && brush_density < 5) {
+            brush_density = 5; // for low quality, make it less dense to avoid running out of particles
         }
 
-        if (brush_density > brush_size / 3)
-        {
+        // if the brush density is bigger than a third of the brush size, make it that
+        if (brush_density > brush_size / 3) {
             brush_density = (int)brush_size / 3;
         }
 
-        for (int dx = (int)-brush_size; dx < (int)brush_size; dx += brush_density)
-        {
-            for (int dy = (int)-brush_size; dy < (int)brush_size; dy += brush_density)
-            {
+        for (int dx = (int)-brush_size; dx < (int)brush_size; dx += brush_density) {
+            for (int dy = (int)-brush_size; dy < (int)brush_size; dy += brush_density)  {
                 newX = centerX + dx;
                 newY = centerY + dy;
 
                 if ((newX - centerX) * (newX - centerX)
-                    + (newY - centerY) * (newY - centerY) < brush_size * brush_size)
-                {
+                    + (newY - centerY) * (newY - centerY) < brush_size * brush_size) {
                     int nextAvailableIndex = getNextAvailableIndex();
                     if (nextAvailableIndex + 3 >= MAX_SPACE) { continue; } // make sure we don't go out of bounds
                     x_y_theta_dataType_array[nextAvailableIndex] = centerX + dx; //X
@@ -509,7 +551,7 @@ public class ComputeHookup : MonoBehaviour
                     x_y_theta_dataType_array[nextAvailableIndex + 2] = Random.Range(-PI, PI); //random Theta
 
                     moveDist_SenseDist_particleDepositStrength_lifetime_array[nextAvailableIndex] = moveDistanceSlider.value;
-                    moveDist_SenseDist_particleDepositStrength_lifetime_array[nextAvailableIndex + 1] = senseDistanceSlider.value * pixelWidth/3.0f;//moveDistanceSlider.value * 2.0f;//sense distance
+                    moveDist_SenseDist_particleDepositStrength_lifetime_array[nextAvailableIndex + 1] = senseDistanceSlider.value * pixelWidth/3.0f;//sense distance
                     moveDist_SenseDist_particleDepositStrength_lifetime_array[nextAvailableIndex + 2] = agentDepositStrengthSlider.value;
                     moveDist_SenseDist_particleDepositStrength_lifetime_array[nextAvailableIndex + 3] = 1.0f;//lifetimeSlider.value;
 
@@ -523,27 +565,11 @@ public class ComputeHookup : MonoBehaviour
                     turn_sense_angles_array[nextAvailableIndex + 2] = 0.0f;//traceDecaySlider.value;
                     turn_sense_angles_array[nextAvailableIndex + 3] = 0.0f;
 
-                    //Debug.Log(colorPicker.CurrentColor.r);
-                    // Debug.Log(colorPicker.CurrentColor.g);
-                    // Debug.Log(colorPicker.CurrentColor.b);
-                    // Debug.Log("--");
-                    // if (deposit.value == DRAW_DEPOSIT_MODE) {
-                    // draw temporary deposit that dissolves
-                    // Debug.Log("DRAW DEPOSIT");
-                    //  x_y_theta_dataType_array[nextAvailableIndex + 3] = DEPOSIT;
-                    /// } else
-
-                    //if (modeDropdown.value == DRAW_DEPOSIT_EMITTERS_MODE) {
-                    if (depositBrushButton.interactable == false)
-                    {
+                    if (depositBrushButton.interactable == false) {
                         // draw deposit emitters that continuously emit deposit
                         x_y_theta_dataType_array[nextAvailableIndex + 3] = DEPOSIT_EMITTER;
-                        // } else if (modeDropdown.value == DRAW_PARTICLES_MODE) {
-                    }
-                    else if (particleBrushButton.interactable == false)
-                    {
+                    } else if (particleBrushButton.interactable == false)  {
                         // draw particles
-                        //    Debug.Log("DRAW PARTICLES");
                         x_y_theta_dataType_array[nextAvailableIndex + 3] = PARTICLE;
                     }
                 }
@@ -573,13 +599,12 @@ public class ComputeHookup : MonoBehaviour
     
     }
 
-    // Update is called once per frame
-    void Update()
-    {
+    /*
+     * called every animation frame
+     */
+    void Update() {
 
-        if (Input.GetKeyDown("escape"))
-        {
-            Debug.Log("quit");
+        if (Input.GetKeyDown("escape")) {
             x_y_theta_dataType_buffer.Release();
             moveDist_SenseDist_particleDepositStrength_lifetime_buffer.Release();
             red_green_blue_alpha_buffer.Release();
@@ -596,64 +621,42 @@ public class ComputeHookup : MonoBehaviour
         decay.SetInt("pixelHeight", (int)pixelHeight);
         decay.SetFloat("trace_decay_value", traceDecaySlider.value);
 
-        if (swap == 0)
-        {
+        if (swap == 0) {
             decay.SetTexture(decayKernel, "deposit_in", deposit_in);
             decay.SetTexture(decayKernel, "deposit_out", deposit_out);
             decay.SetTexture(decayKernel, "tex_trace_in", tex_trace_in);
             decay.SetTexture(decayKernel, "tex_trace_out", tex_trace_out);
-           // blank_canvas_shader.SetTexture(blank_canvas_shader.FindKernel("CSMain"), "Result", tex_trace_out);
-
             updatepropagateShaderVariables(deposit_out, tex_trace_out);
             swap = 1;
-        }
-        else
-        {
+        }  else {
             decay.SetTexture(decayKernel, "deposit_in", deposit_out);
             decay.SetTexture(decayKernel, "deposit_out", deposit_in);
             decay.SetTexture(decayKernel, "tex_trace_in", tex_trace_out);
             decay.SetTexture(decayKernel, "tex_trace_out", tex_trace_in);
-          //  blank_canvas_shader.SetTexture(blank_canvas_shader.FindKernel("CSMain"), "Result", tex_trace_in);
-
             updatepropagateShaderVariables(deposit_in, tex_trace_in);
             swap = 0;
         }
         blank_canvas_shader.SetTexture(blank_canvas_shader.FindKernel("CSMain"), "Result", particle_render_texture);
-        // blank_canvas_shader.Dispatch(blank_canvas_shader.FindKernel("CSMain"), COMPUTE_GRID_WIDTH, COMPUTE_GRID_HEIGHT, 1);
-        // blank_canvas_shader.SetTexture(blank_canvas_shader.FindKernel("CSMain"), "Result", particle_render_texture);
-        
-
         blank_canvas_shader.Dispatch(blank_canvas_shader.FindKernel("CSMain"), COMPUTE_GRID_WIDTH, COMPUTE_GRID_HEIGHT, 1);
         decay.Dispatch(decayKernel, COMPUTE_GRID_WIDTH, COMPUTE_GRID_HEIGHT, 1);
         propagate.Dispatch(propagateKernel, COMPUTE_GRID_WIDTH, COMPUTE_GRID_HEIGHT, 1);
-        
-        
 
-        if (viewDropdown.value == DEPOSIT_VIEW)
-        {
-            if (swap == 0)
-            {
+        if (viewDropdown.value == DEPOSIT_VIEW) {
+            if (swap == 0) {
                 mat.mainTexture = deposit_in;
-            }
-            else
-            {
+            } else  {
                 mat.mainTexture = deposit_out;
             }
         }
 
-        if (viewDropdown.value == PARTICLE_VIEW)
-        {
+        if (viewDropdown.value == PARTICLE_VIEW) {
             mat.mainTexture = particle_render_texture;
         }
 
-        if (viewDropdown.value == TRACE_VIEW)
-        {
-            if (swap == 0)
-            {
+        if (viewDropdown.value == TRACE_VIEW) {
+            if (swap == 0) {
                 mat.mainTexture = tex_trace_in;
-            }
-            else
-            {
+            } else  {
                 mat.mainTexture = tex_trace_out;
             }
         }
@@ -661,16 +664,14 @@ public class ComputeHookup : MonoBehaviour
         GameObject drawingCanvas = GameObject.Find("DrawingCanvas");
         float pixelWidthDrawingCanvas = drawingCanvas.transform.lossyScale.x / (drawingCanvas.transform.lossyScale.x + uiBox.transform.lossyScale.x) * pixelWidth;
 
-        
-        if (Input.GetMouseButton(0) && Vector3.Distance(previousMousePosition, Input.mousePosition) > 20.0f)
-        {
+        // if the mouse is down and there is some distance between the previous position and the new one
+        if (Input.GetMouseButton(0) && Vector3.Distance(previousMousePosition, Input.mousePosition) > 20.0f) {
             RaycastHit hit;
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             previousMousePosition = Input.mousePosition;
-            if (Physics.Raycast(ray, out hit, 100.0f))
-            {
-                if (hit.transform.name == "DrawingCanvas")
-                {
+            if (Physics.Raycast(ray, out hit, 100.0f)) {
+                // if they drew on the drawing canvas
+                if (hit.transform.name == "DrawingCanvas") {
                     slimeBot.startedDrawing();
                     drawing = true;
                     float drawingCanvasWidth = drawingCanvas.transform.lossyScale.x / (drawingCanvas.transform.lossyScale.x + uiBox.transform.lossyScale.x) * Screen.width;
@@ -679,41 +680,43 @@ public class ComputeHookup : MonoBehaviour
                     float newX = Camera.main.WorldToScreenPoint(hit.point).x + uiBoxWidth * (1.2f + -1.0f * (fraction - 0.5f)/2.0f);
                     draw(newX, Camera.main.WorldToScreenPoint(hit.point).y);
 
-                    if (Input.GetMouseButtonDown(0))
-                    {
-                        Debug.Log("get mouse button down");
-                        userClickData["DrawMouseDown"].Add(new UIClickData(Time.time, "x", newX, "y", Camera.main.WorldToScreenPoint(hit.point).y));
-                        userClickData["ViewDropdown"].Add(new UIClickData(Time.time, "drawing view", viewDropdown.value));
-                        userClickData["Play"].Add(new UIClickData(Time.time, "drawing play=0pause=1", playingOrPausing));
-                        userClickData["Pause"].Add(new UIClickData(Time.time, "drawing play=0pause=1", playingOrPausing));
-                        userClickData["BrushSizeSlider"].Add(new UIClickData(Time.time, "drawing brush size", brushSizeSlider.value));
-                        userClickData["BrushDensitySlider"].Add(new UIClickData(Time.time, "drawing brush density", brushDensitySlider.value + 50));
-                        userClickData["MoveDistanceSlider"].Add(new UIClickData(Time.time, "drawing speed", moveDistanceSlider.value));
-                        userClickData["ScaleSlider"].Add(new UIClickData(Time.time, "drawing visibility distance", scaleSlider.value));
-                        userClickData["DepositStrengthSlider"].Add(new UIClickData(Time.time, "drawing deposit strength", depositStrengthSlider.value));
-                        userClickData["AgentDepositStrengthSlider"].Add(new UIClickData(Time.time, "drawing particle deposit strength", agentDepositStrengthSlider.value));
-                        userClickData["Picker"].Add(new UIClickData(Time.time, "drawing red", colorPicker.CurrentColor.r, "drawing green", colorPicker.CurrentColor.g, "drawing blue", colorPicker.CurrentColor.b));
-                        userClickData["SenseDistanceSlider"].Add(new UIClickData(Time.time, "drawing sense distance ", senseDistanceSlider.value));
-                        userClickData["TraceDecaySlider"].Add(new UIClickData(Time.time, "drawing trace decay ", traceDecaySlider.value));
-            
+                    if (Input.GetMouseButtonDown(0)) {
+                        saveDrawingUIClickData(newX, hit);
                     }
                 }
             }
         }
 
-        if (Input.GetMouseButtonUp(0) && drawing)
-        {
-            Debug.Log("get mouse button up");
+        if (Input.GetMouseButtonUp(0) && drawing) {
             userClickData["DrawMouseUp"].Add(new UIClickData(Time.time, "mouse up", 0.0f));
             drawing = false;
         }
+    }
 
+    /*
+     * save drawing the ui click data
+     */
+    private void saveDrawingUIClickData(float newX, RaycastHit hit)  {
+        userClickData["DrawMouseDown"].Add(new UIClickData(Time.time, "x", newX, "y", Camera.main.WorldToScreenPoint(hit.point).y));
+        userClickData["ViewDropdown"].Add(new UIClickData(Time.time, "drawing view", viewDropdown.value));
+        userClickData["Play"].Add(new UIClickData(Time.time, "drawing play=0pause=1", playingOrPausing));
+        userClickData["Pause"].Add(new UIClickData(Time.time, "drawing play=0pause=1", playingOrPausing));
+        userClickData["BrushSizeSlider"].Add(new UIClickData(Time.time, "drawing brush size", brushSizeSlider.value));
+        userClickData["BrushDensitySlider"].Add(new UIClickData(Time.time, "drawing brush density", brushDensitySlider.value + 50));
+        userClickData["MoveDistanceSlider"].Add(new UIClickData(Time.time, "drawing speed", moveDistanceSlider.value));
+        userClickData["ScaleSlider"].Add(new UIClickData(Time.time, "drawing visibility distance", scaleSlider.value));
+        userClickData["DepositStrengthSlider"].Add(new UIClickData(Time.time, "drawing deposit strength", depositStrengthSlider.value));
+        userClickData["AgentDepositStrengthSlider"].Add(new UIClickData(Time.time, "drawing particle deposit strength", agentDepositStrengthSlider.value));
+        userClickData["Picker"].Add(new UIClickData(Time.time, "drawing red", colorPicker.CurrentColor.r, "drawing green", colorPicker.CurrentColor.g, "drawing blue", colorPicker.CurrentColor.b));
+        userClickData["SenseDistanceSlider"].Add(new UIClickData(Time.time, "drawing sense distance ", senseDistanceSlider.value));
+        userClickData["TraceDecaySlider"].Add(new UIClickData(Time.time, "drawing trace decay ", traceDecaySlider.value));
 
     }
 
-
-    public void SaveDataFile()
-    {
+    /*
+     * save the data file with all of the click data from the user
+     */
+    public void SaveDataFile() {
         string destination = Application.persistentDataPath + "/dataFile" + Random.Range(0, 10000) + ".csv";
         FileStream file;
         Debug.Log("destination " + destination);
@@ -747,21 +750,19 @@ public class ComputeHookup : MonoBehaviour
         file.Close();
     }
 
-    void OnApplicationQuit()
-    {
-        //TMP_Dropdown saveDataDropdown = GameObject.Find("SaveDataDropdown").GetComponent<TMP_Dropdown>();
-        //if (saveDataDropdown.value == SAVE_DATA)
-        //{
+    /*
+     * on application quit, save the data file
+     */
+    void OnApplicationQuit() {
             SaveDataFile();
-       // }
-        Debug.Log("Application ending after " + Time.time + " seconds");
     }
 
-    private static void AddText(FileStream fs, string value)
-    {
+
+    /*
+     * adds text to the file
+     */
+    private static void AddText(FileStream fs, string value) {
         byte[] info = new UTF8Encoding(true).GetBytes(value);
         fs.Write(info, 0, info.Length);
     }
-
-
 }
