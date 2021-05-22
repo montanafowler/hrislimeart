@@ -98,7 +98,6 @@ public class ComputeHookup : MonoBehaviour
     private int group_theory_index = 0;
     private int propagateKernel;
 
-    //public bool QUALITY_CHOSEN = false;
     public float SAVED_QUALITY;
 
     //values to adjust scale and speed sliders
